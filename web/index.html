@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#080b12">
+<title>GhostPad</title>
+<link rel="icon" type="image/png" sizes="64x64" href="/static/icons/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/static/icons/apple-touch-icon.png">
+<link rel="manifest" href="/static/manifest.json">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<video id="nosleep" class="nosleep" playsinline muted loop disableremoteplayback aria-hidden="true">
+  <source src="/static/nosleep.webm" type="video/webm">
+  <source src="/static/nosleep.mp4" type="video/mp4">
+</video>
+
+<!-- ===================================================== sprite de iconos -->
+<svg class="sprite" aria-hidden="true">
+  <symbol id="ic-plus" viewBox="0 0 24 24">
+    <path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7z"/>
+  </symbol>
+  <symbol id="ic-minus" viewBox="0 0 24 24">
+    <path d="M3 10h18v4H3z"/>
+  </symbol>
+  <symbol id="ic-home" viewBox="0 0 24 24">
+    <path d="M12 3 3 10.5V21h6v-6h6v6h6V10.5z"/>
+  </symbol>
+  <symbol id="ic-capture" viewBox="0 0 24 24">
+    <path d="M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1m8 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6"/>
+  </symbol>
+  <symbol id="ic-chev" viewBox="0 0 24 24">
+    <path d="M12 6.5 20 17H4z"/>
+  </symbol>
+  <symbol id="ic-phone" viewBox="0 0 24 24">
+    <path d="M7 1.5h10A2.5 2.5 0 0 1 19.5 4v16a2.5 2.5 0 0 1-2.5 2.5H7A2.5 2.5 0 0 1 4.5 20V4A2.5 2.5 0 0 1 7 1.5m0 2.5v14h10V4zm3.5 15.5h3v1.2h-3z"/>
+  </symbol>
+  <symbol id="ic-expand" viewBox="0 0 24 24">
+    <path d="M3 3h7v2.5H5.5V10H3zm11 0h7v7h-2.5V5.5H14zM3 14h2.5v4.5H10V21H3zm15.5 0H21v7h-7v-2.5h4.5z"/>
+  </symbol>
+  <symbol id="ic-gear" viewBox="0 0 24 24">
+    <path d="m12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8m9.4 4c0 .6-.1 1.1-.2 1.7l2.1 1.6-2 3.5-2.5-1a7.8 7.8 0 0 1-2.9 1.7L15.5 22h-4l-.4-2.5a7.8 7.8 0 0 1-2.9-1.7l-2.5 1-2-3.5 2.1-1.6a8 8 0 0 1 0-3.4L3.7 8.7l2-3.5 2.5 1a7.8 7.8 0 0 1 2.9-1.7L11.5 2h4l.4 2.5a7.8 7.8 0 0 1 2.9 1.7l2.5-1 2 3.5-2.1 1.6c.1.6.2 1.1.2 1.7"/>
+  </symbol>
+</svg>
+
+<!-- ------------------------------------------------- orientación / pantalla -->
+<div id="gate" class="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-phone" aria-hidden="true"><svg><use href="#ic-phone"/></svg></div>
+    <h2 id="gate-title">Gira el teléfono</h2>
+    <p id="gate-text">Ponlo en horizontal para usar el mando.</p>
+    <input id="gate-pin" class="pin-input" type="text" inputmode="numeric" autocomplete="one-time-code"
+           maxlength="8" placeholder="PIN" hidden>
+    <button id="gate-btn" class="primary">Continuar</button>
+    <p class="gate-status"><span class="gate-dot"></span><span id="gate-conn">conectando…</span></p>
+  </div>
+</div>
+
+<!-- ------------------------------------------------------------------ hud -->
+<header id="hud" class="hud">
+  <span id="slot-badge" class="badge">—</span>
+  <span id="status" class="status">conectando…</span>
+  <span id="ping" class="ping" hidden></span>
+  <button id="fs-btn" class="hud-btn" data-i18n-aria="hud.fullscreen" aria-label="Pantalla completa">
+    <svg><use href="#ic-expand"/></svg>
+  </button>
+  <button id="settings-btn" class="hud-btn" data-i18n-aria="hud.settings" aria-label="Ajustes">
+    <svg><use href="#ic-gear"/></svg>
+  </button>
+</header>
+
+<!-- ------------------------------------------------------------- modo pro -->
+<main id="pro" class="stage pro">
+
+  <div class="shoulders left">
+    <button class="trigger" data-btn="ZL">ZL</button>
+    <button class="trigger" data-btn="L">L</button>
+  </div>
+  <div class="shoulders right">
+    <button class="trigger" data-btn="ZR">ZR</button>
+    <button class="trigger" data-btn="R">R</button>
+  </div>
+
+  <section class="side left">
+    <div class="stick" id="stick-l" data-stick="l">
+      <div class="stick-base"></div>
+      <div class="stick-knob"></div>
+    </div>
+    <div class="dpad" id="dpad">
+      <svg class="dpad-svg" viewBox="0 0 100 100" aria-hidden="true">
+        <defs>
+          <clipPath id="dpad-clip"><path d="M41 0H59a8 8 0 0 1 8 8v25h25a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8H67v25a8 8 0 0 1-8 8H41a8 8 0 0 1-8-8V67H8a8 8 0 0 1-8-8V41a8 8 0 0 1 8-8h25V8a8 8 0 0 1 8-8z"/></clipPath>
+          <linearGradient id="dpad-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#1c2534"/><stop offset="1" stop-color="#131a26"/>
+          </linearGradient>
+        </defs>
+        <path class="dpad-body" d="M41 0H59a8 8 0 0 1 8 8v25h25a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8H67v25a8 8 0 0 1-8 8H41a8 8 0 0 1-8-8V67H8a8 8 0 0 1-8-8V41a8 8 0 0 1 8-8h25V8a8 8 0 0 1 8-8z"/>
+        <g clip-path="url(#dpad-clip)">
+          <g class="dpad-dir up"><rect x="33" y="0" width="34" height="33"/><path class="dpad-arrow" d="M50 9l8 11H42z"/></g>
+          <g class="dpad-dir down"><rect x="33" y="67" width="34" height="33"/><path class="dpad-arrow" d="M50 91l-8-11h16z"/></g>
+          <g class="dpad-dir left"><rect x="0" y="33" width="33" height="34"/><path class="dpad-arrow" d="M9 50l11-8v16z"/></g>
+          <g class="dpad-dir right"><rect x="67" y="33" width="33" height="34"/><path class="dpad-arrow" d="M91 50l-11 8V42z"/></g>
+        </g>
+        <path class="dpad-outline" d="M41 0H59a8 8 0 0 1 8 8v25h25a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8H67v25a8 8 0 0 1-8 8H41a8 8 0 0 1-8-8V67H8a8 8 0 0 1-8-8V41a8 8 0 0 1 8-8h25V8a8 8 0 0 1 8-8z"/>
+      </svg>
+    </div>
+  </section>
+
+  <section class="center">
+    <button class="mini" data-btn="MINUS" aria-label="Menos"><svg><use href="#ic-minus"/></svg></button>
+    <button class="mini" data-btn="CAPTURE" aria-label="Captura"><svg><use href="#ic-capture"/></svg></button>
+    <button class="mini" data-btn="HOME" aria-label="Home"><svg><use href="#ic-home"/></svg></button>
+    <button class="mini" data-btn="PLUS" aria-label="Más"><svg><use href="#ic-plus"/></svg></button>
+  </section>
+
+  <section class="side right">
+    <div class="face">
+      <button class="face-btn x" data-btn="X">X</button>
+      <button class="face-btn y" data-btn="Y">Y</button>
+      <button class="face-btn a" data-btn="A">A</button>
+      <button class="face-btn b" data-btn="B">B</button>
+    </div>
+    <div class="stick" id="stick-r" data-stick="r">
+      <div class="stick-base"></div>
+      <div class="stick-knob"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- --------------------------------------------------------------- ajustes -->
+<dialog id="settings" class="settings">
+  <h2 data-i18n="settings.title">Ajustes</h2>
+
+  <label class="row">
+    <span><span data-i18n="settings.lang">Idioma</span><small data-i18n="settings.lang.hint">Se guarda en este teléfono</small></span>
+    <select id="opt-lang">
+      <option value="es">Español</option>
+      <option value="en">English</option>
+    </select>
+  </label>
+
+  <label class="row">
+    <span><span data-i18n="settings.sens">Sensibilidad del stick izquierdo</span><small data-i18n="settings.sens.hint">Más alto = llega al tope con menos recorrido</small></span>
+    <input type="range" id="opt-sens" min="60" max="200" step="5" value="115">
+  </label>
+
+  <label class="row">
+    <span><span data-i18n="settings.deadzone">Zona muerta</span><small data-i18n="settings.deadzone.hint">Súbela si el personaje se mueve solo</small></span>
+    <input type="range" id="opt-deadzone" min="0" max="30" value="8">
+  </label>
+
+  <label class="row">
+    <span data-i18n="settings.scale">Tamaño de los botones</span>
+    <input type="range" id="opt-scale" min="80" max="145" step="5" value="100">
+  </label>
+
+  <label class="row">
+    <span><span data-i18n="settings.vibrate">Vibración al pulsar</span><small id="vib-note" data-i18n="settings.vibrate.hint">Al pulsar botones y con el rumble del juego</small></span>
+    <span class="row-controls">
+      <button type="button" id="vib-test" class="ghost" data-i18n="settings.test">Probar</button>
+      <input type="checkbox" id="opt-vibrate" checked>
+    </span>
+  </label>
+
+  <label class="row">
+    <span><span data-i18n="settings.haptic">Fuerza de la vibración</span><small data-i18n="settings.haptic.hint">Si apenas la notas, sube a Fuerte</small></span>
+    <select id="opt-haptic">
+      <option value="soft" data-i18n="settings.haptic.soft">Suave</option>
+      <option value="medium" data-i18n="settings.haptic.medium">Media</option>
+      <option value="strong" data-i18n="settings.haptic.strong">Fuerte</option>
+    </select>
+  </label>
+
+  <label class="row">
+    <span><span data-i18n="settings.layout">Mapeo A/B/X/Y</span><small data-i18n="settings.layout.hint">Cámbialo solo si los botones salen invertidos</small></span>
+    <select id="opt-layout">
+      <option value="positional" data-i18n="settings.layout.positional">Por posición (Xbox estándar)</option>
+      <option value="nintendo" data-i18n="settings.layout.nintendo">Por etiqueta (Nintendo)</option>
+    </select>
+  </label>
+
+  <label class="row">
+    <span data-i18n="settings.rstick">Stick derecho visible</span>
+    <input type="checkbox" id="opt-rstick" checked>
+  </label>
+
+  <button id="settings-close" class="primary" data-i18n="settings.done">Listo</button>
+</dialog>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

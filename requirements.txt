@@ -1,0 +1,4 @@
+aiohttp>=3.9
+vgamepad>=0.1.0
+qrcode>=7.4
+colorama>=0.4
