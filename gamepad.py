@@ -25,6 +25,11 @@ else:
     _IMPORT_ERROR = None
 
 
+#: XInput expone como mucho cuatro mandos (XUSER_MAX_COUNT), así que crear más
+#: solo produciría dispositivos que ningún juego llega a ver.
+MAX_PLAYERS: Final[int] = 4
+
+
 def _xusb_map() -> Mapping[Button, int]:
     """Buttons whose mapping never depends on the chosen face-button layout."""
     b = vg.XUSB_BUTTON
@@ -152,8 +157,8 @@ class PadSlotManager:
     """Hands out one virtual pad per player and recycles them on disconnect."""
 
     def __init__(self, player_count: int) -> None:
-        if player_count < 1:
-            raise ValueError("player_count must be >= 1")
+        if not 1 <= player_count <= MAX_PLAYERS:
+            raise ValueError(f"player_count must be between 1 and {MAX_PLAYERS}")
         self._lock = threading.Lock()
         self._pads: dict[int, VirtualPad] = {
             slot: VirtualPad(slot) for slot in range(1, player_count + 1)
@@ -164,6 +169,12 @@ class PadSlotManager:
     @property
     def capacity(self) -> int:
         return len(self._pads)
+
+    @property
+    def in_use(self) -> int:
+        """Mandos con un teléfono conectado ahora mismo."""
+        with self._lock:
+            return len(self._pads) - len(self._free)
 
     def acquire(self, preferred: int | None = None) -> tuple[int, VirtualPad] | None:
         with self._lock:

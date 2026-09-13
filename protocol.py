@@ -83,8 +83,11 @@ class InputFrame:
             raise ProtocolError("input frame must be a JSON object")
 
         try:
+            # OverflowError incluido: JSON admite 1e999, que Python lee como
+            # infinito, y convertirlo a entero revienta. Sin capturarlo, un solo
+            # frame así echaba al jugador de la partida.
             buttons = int(payload.get("b", 0)) & BUTTON_MASK
-        except (TypeError, ValueError) as exc:
+        except (TypeError, ValueError, OverflowError) as exc:
             raise ProtocolError("field 'b' must be an integer") from exc
 
         sticks = {key: _clamp(payload.get(key, 0.0), -1.0, 1.0) for key in _STICK_KEYS}

@@ -21,5 +21,7 @@ if not exist "%PY%" (
     "%PY%" -m pip install -r requirements.txt || (echo [ERROR] Fallo la instalacion. & pause & exit /b 1)
 )
 
-"%PY%" server.py --players 2 --port 8000
+:: Sin opciones arranca con cuatro mandos en el puerto 8000. Puedes pasarle
+:: cualquier opcion del servidor, p. ej.:  start.bat --players 2 --port 8080
+"%PY%" server.py %*
 pause
