@@ -1,6 +1,6 @@
 [project]
 name = "ghostpad"
-version = "1.0.0"
+version = "1.1.0"
 description = "Tu teléfono como mando de Xbox real para Windows, desde el navegador y sin instalar nada."
 readme = "README.md"
 license = { file = "LICENSE" }

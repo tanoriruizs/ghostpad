@@ -65,6 +65,11 @@ start.bat
   <sub>El QR ya lleva el PIN dentro, así que normalmente esta pantalla ni aparece.</sub>
 </p>
 
+Arranca preparado para cuatro jugadores, que es el máximo que admite XInput. No
+hace falta tocar nada: se conectan los que sean y cada teléfono recibe el
+siguiente mando libre. Si algún juego se lía al ver mandos de sobra, arranca con
+menos: `start.bat --players 2`.
+
 Si el firewall de Windows bloquea el puerto, ejecuta `abrir-firewall.bat` **como
 administrador** una sola vez.
 
@@ -72,9 +77,9 @@ administrador** una sola vez.
 
 | | |
 |---|---|
-| 🎮 **Pro Controller completo** | ABXY, cruceta con diagonales, dos sticks analógicos con clic (L3/R3), L/R/ZL/ZR, +/−, Home, captura |
-| 👥 **Multijugador** | Un mando virtual por teléfono — 2 por defecto, hasta 4 con `--players 4` |
-| 🔐 **PIN de acceso** | 4 dígitos aleatorios por sesión, incluidos en el QR para que entrar sea un escaneo. `--pin off` lo desactiva |
+| 🎮 **Pro Controller completo** | ABXY, cruceta con diagonales, dos sticks analógicos con clic (L3/R3), L/R/ZL/ZR, +/− y Home |
+| 👥 **Multijugador** | Hasta cuatro teléfonos a la vez, sin configurar nada: cada uno recibe su propio mando al escanear |
+| 🔐 **PIN de acceso** | 4 dígitos aleatorios por sesión, incluidos en el QR para que entrar sea un escaneo. Tras varios fallos la IP queda en espera. `--pin off` lo desactiva |
 | 📳 **Vibración real** | El rumble que el juego envía al mando llega al teléfono, con fuerza ajustable |
 | 🔆 **Pantalla siempre encendida** | Sin HTTPS — Wake Lock con respaldo de vídeo mudo |
 | 🔄 **Se orienta solo** | Ábrelo en vertical o vuelve de otra app: un toque lo pone en horizontal + pantalla completa |
@@ -104,12 +109,12 @@ administrador** una sola vez.
 ### Opciones del servidor
 
 ```bat
-.venv\Scripts\python server.py --players 4 --port 8080 --pin off
+.venv\Scripts\python server.py --players 2 --port 8080 --pin off
 ```
 
 | Opción | Descripción | Por defecto |
 |---|---|---|
-| `--players N` | Mandos virtuales creados al arrancar | 2 |
+| `--players N` | Mandos virtuales creados al arrancar, de 1 a 4 | 4 |
 | `--port N` | Puerto HTTP/WebSocket | 8000 |
 | `--host IP` | Interfaz de escucha | 0.0.0.0 |
 | `--pin auto\|off\|1234` | PIN de acceso: aleatorio, desactivado o fijo | auto |
@@ -141,6 +146,8 @@ Para forzar un jugador concreto, añade `?slot=2` a la dirección.
 ghostpad/
 ├─ server.py        servidor aiohttp: sirve la página, un WebSocket por jugador,
 │                   comprueba el PIN, valida frames y reenvía el rumble
+├─ banner.py        lo que ves en consola: el fantasma, el panel de arranque en
+│                   dos columnas y los avisos de jugadores
 ├─ gamepad.py       envoltorio de vgamepad (ViGEmBus): un VX360Gamepad por slot,
 │                   mapeo Switch → Xbox y callback de vibración
 ├─ protocol.py      formato del frame y validación — todo lo que llega por la red
@@ -182,15 +189,20 @@ cliente parsea.
 | El teléfono no carga la página | Otra red (invitados, datos móviles); Wi-Fi marcada *Pública* en Windows (cámbiala a *Privada* o ejecuta `abrir-firewall.bat` como admin); antivirus bloqueando el puerto |
 | *"Este mando pide un PIN"* | Escribe el PIN de la consola del PC, o escanea el QR, que ya lo incluye |
 | El juego solo ve un mando | El segundo teléfono aún no ha entrado, o el juego se abrió antes que el servidor. Conecta y reinicia el juego |
-| Se siente con retraso | Usa Wi-Fi de 5 GHz; mira el ping en la barra superior (verde < 45 ms, ámbar < 90 ms) |
+| Se siente con retraso | Usa Wi-Fi de 5 GHz; mira el ping de la barra superior: gris hasta 45 ms, ámbar hasta 90 ms, rojo por encima. Es ida y vuelta, así que el retraso real es la mitad |
 | No vibra | iPhone: Safari no lo soporta. Android: ⚙ → *Probar* te dice si el navegador la bloqueó o si la háptica del teléfono está apagada |
+| El botón de captura no hace nada | El mando de Xbox 360 no tiene ese botón, así que Windows nunca lo recibe. Está en pantalla por parecido con el Pro Controller |
 | No se gira solo en iPhone | iOS no lo permite a las webs; GhostPad te pide girarlo a mano y funciona igual |
 
 ### Seguridad
 
 El servidor solo escucha en tu red local. El PIN evita que cualquiera de tu Wi-Fi
-tome un mando libre, pero no es cifrado: no expongas el puerto a Internet ni lo
-uses en redes públicas.
+tome un mando libre, y tras cinco fallos seguidos esa dirección queda en espera
+un tiempo que se dobla con cada intento, de modo que recorrer las 10 000
+combinaciones deja de ser cuestión de segundos.
+
+Aun así no es cifrado: no expongas el puerto a Internet ni lo uses en redes
+públicas.
 
 ### Hoja de ruta
 
