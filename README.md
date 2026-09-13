@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshot.png" alt="GhostPad en un teléfono en horizontal" width="720">
+  <img src="docs/screenshot.png" alt="El mando de GhostPad en la pantalla de un teléfono en horizontal" width="760">
 </p>
 
 Escanea un código QR con cualquier teléfono y se convierte en un mando de Xbox
@@ -57,6 +57,13 @@ start.bat
    muestra el logo, la dirección, el PIN de acceso y un código QR.
 3. Escanea el QR con cada teléfono, toca **Continuar**, y ya eres `P1`, `P2`…
 4. En el juego, cada teléfono aparece como un *Xbox 360 Controller*.
+
+<p align="center">
+  <img src="docs/pantalla-pin.png" alt="Pantalla de acceso con PIN de GhostPad" width="470">
+</p>
+<p align="center">
+  <sub>El QR ya lleva el PIN dentro, así que normalmente esta pantalla ni aparece.</sub>
+</p>
 
 Si el firewall de Windows bloquea el puerto, ejecuta `abrir-firewall.bat` **como
 administrador** una sola vez.
@@ -110,6 +117,10 @@ administrador** una sola vez.
 | `--version` | Muestra la versión y sale | |
 
 ### Ajustes en el teléfono (⚙)
+
+<p align="center">
+  <img src="docs/pantalla-ajustes.png" alt="Panel de ajustes de GhostPad abierto sobre el mando" width="560">
+</p>
 
 | Opción | Para qué sirve |
 |---|---|
